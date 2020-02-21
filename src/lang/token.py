@@ -72,11 +72,11 @@ class Token:
 
         return None
 
-    def is_ok(self) -> bool:
-        return self.word.isalpha() and self.word.find("'") == -1
-
     def is_interesting(self) -> bool:
-        if not self.is_ok() or self.tag in self._IGNORING_TAGS:
+        if self.tag not in self._PART_OF_SPEECH_SHORT2LONG:
+            return False
+
+        if self.tag in self._IGNORING_TAGS:
             return False
 
         if self.tag in self._LONG_WORD_TAGS and len(self.word) < 4:
@@ -91,7 +91,7 @@ class Token:
         if self.tag == self.PHRASAL_VERB_TAG:
             return True
 
-        return self.is_word_in_english_vocab(self.word)
+        return self.word.find("'") == -1 and self.is_word_in_english_vocab(self.word)
 
     @staticmethod
     def is_word_in_english_vocab(word: str) -> bool:

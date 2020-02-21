@@ -300,14 +300,14 @@ def is_phrasal_verb_(sentence: str) -> bool:
 
 
 def check_after_verb_token_(token: Token) -> bool:
-    return token.is_ok() and token.tag in ("ADV", "PRT")
+    return token.tag in ("ADV", "PRT")
 
 
 def get_phrasal_verbs(text_tokens: List[Token]) -> List[Token]:
     phrasal_verbs = []
     i = 0
     while i < len(text_tokens):
-        if not text_tokens[i].is_ok() or text_tokens[i].tag != "VERB":
+        if text_tokens[i].tag != "VERB":
             i += 1
             continue
 
