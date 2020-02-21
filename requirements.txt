@@ -1,0 +1,6 @@
+nltk
+numpy
+pysubs2
+pyqt5
+PyQt5-stubs
+qt5_t5darkstyle
