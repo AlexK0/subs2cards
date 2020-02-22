@@ -28,6 +28,7 @@ class Token:
     _PART_OF_SPEECH_LONG2SHORT = {y: x for x, y in _PART_OF_SPEECH_SHORT2LONG.items()}
     _ENGLISH_VOCAB = None
     _REMOVABE_ENDINGS = ("ally", "ing", "ed", "ly")
+    _NORMAL_CHARS_IN_CONTEXT = {",", ".", ":", ";", "!", "?", "-", "'", " "}
 
     @staticmethod
     def preload_nltk_data():
@@ -102,7 +103,24 @@ class Token:
     def is_context_worse_then(self, other: 'Token') -> bool:
         if bool(self.context_sentence_native) != bool(other.context_sentence_native):
             return bool(other.context_sentence_native)
-        return len(self.context_sentence_en) < len(other.context_sentence_en)
+
+        def is_bad_char(char: str) -> bool:
+            return not char.isalpha() and char not in self._NORMAL_CHARS_IN_CONTEXT
+        this_bad_chars = sum(1 for char in self.context_sentence_en if is_bad_char(char))
+        other_bad_chars = sum(1 for char in other.context_sentence_en if is_bad_char(char))
+
+        if this_bad_chars != other_bad_chars:
+            return this_bad_chars > other_bad_chars
+
+        this_en_context_words = sum(1 for char in self.context_sentence_en if char.isspace()) + 1
+        this_native_context_words = sum(1 for char in self.context_sentence_native if char.isspace()) + 1
+        this_diff = abs(this_en_context_words - this_native_context_words)
+
+        other_en_context_words = sum(1 for char in other.context_sentence_en if char.isspace()) + 1
+        other_native_context_words = sum(1 for char in other.context_sentence_native if char.isspace()) + 1
+        other_diff = abs(other_en_context_words - other_native_context_words)
+
+        return this_diff > other_diff
 
     def get_pretty_part_of_speech(self) -> str:
         part_of_speech = "UNKNOWN"
@@ -140,6 +158,10 @@ def is_overlap(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> bool:
     return event1.start <= event2.end and event1.end >= event2.start
 
 
+def overlap_interval(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> int:
+    return min(event1.end, event2.end) - max(event1.start, event2.start)
+
+
 def is_less(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> bool:
     return not is_overlap(event1, event2) and event1.start < event2.start
 
@@ -163,12 +185,9 @@ def get_tokens_from_subs_file(en_subs_file: str, native_subs_file: str) -> List[
 
         normalized_native_text = ""
         if native_i < len(native_lines) and is_overlap(native_lines[native_i], en_line):
-            adjacent_overlaps = \
-                (native_i + 1 < len(native_lines) and is_overlap(native_lines[native_i + 1], en_line)) or \
-                (native_i > 0 and is_overlap(native_lines[native_i - 1], en_line)) or \
-                (en_i + 1 < len(en_lines) and is_overlap(native_lines[native_i], en_lines[en_i + 1])) or \
-                (en_i > 0 and is_overlap(native_lines[native_i], en_lines[en_i - 1]))
-            if not adjacent_overlaps:
+            interval = overlap_interval(native_lines[native_i], en_line)
+            overlap_rate = interval / en_line.duration
+            if overlap_rate > 0.5:
                 normalized_native_text = normalize_text(native_lines[native_i].text)
 
         tokens_raw = nltk.word_tokenize(normalized_text.lower())

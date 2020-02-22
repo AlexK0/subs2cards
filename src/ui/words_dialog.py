@@ -1,4 +1,4 @@
-from typing import Set, Dict, Iterable
+from typing import Set, Dict
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHeaderView, QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem)

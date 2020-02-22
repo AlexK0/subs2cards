@@ -1,11 +1,23 @@
 from typing import Dict
 import webbrowser
 
+from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QDialog
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from src.lang.token import CountedToken
 from src.ui.widget import make_button, make_label
+
+
+class GoogleTranslateDialog(QDialog):
+    def __init__(self, parent: QDialog, word: str):
+        QDialog.__init__(self, parent)
+        self.setFixedSize(1000, 700)
+        self._web = QWebEngineView(self)
+        self._web.load(QUrl("https://translate.google.com/#view=home&op=translate&sl=en&tl=ru&text=%s" % word))
+        self._web.setFixedSize(1000, 650)
+        self._web.show()
 
 
 class WordCardDialog(QDialog):
@@ -24,15 +36,10 @@ class WordCardDialog(QDialog):
 
         self._show_next()
 
-        self._stop_button = make_button(self, "Check", 50, 10, 120,
-                                        lambda: webbrowser.open(self._google_translate_link(self._word_label.text())))
+        self._stop_button = make_button(self, "Check", 50, 10, 120, self._show_google_translate)
         self._ignore_word = make_button(self, "Mark as known", 90, 70, 120, lambda: self._show_next(True))
         self._next_button = make_button(self, "Next", 50, 280, 120, self._show_next)
         self._stop_button = make_button(self, "Exit", 50, 340, 120, self.reject)
-
-    @staticmethod
-    def _google_translate_link(word: str) -> str:
-        return "https://translate.google.com/#view=home&op=translate&sl=en&tl=ru&text=%s" % word
 
     def _show_next(self, add_in_skip_list=False) -> None:
         if add_in_skip_list:
@@ -49,3 +56,7 @@ class WordCardDialog(QDialog):
             self._counter.setText("%s/%s" % (self._word_id, len(self._words_list)))
             if self._word_id == len(self._words_list):
                 self._next_button.setText("Finish")
+
+    def _show_google_translate(self) -> None:
+        google_translate = GoogleTranslateDialog(self, self._word_label.text())
+        google_translate.exec_()
