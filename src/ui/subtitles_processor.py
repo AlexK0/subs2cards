@@ -49,35 +49,14 @@ class SubtitlesProcessor(QRunnable):
 
     def run(self) -> None:
         ignored_words = self._read_skip_list()
-
         words_from_tsv_base = get_tokens_from_tsv_base(self._tsv_base_file)
 
-        en_subs_files = glob.glob(self._en_subs_file)
-        native_subs_files = glob.glob(self._native_subs_file)
-
-        QMetaObject.invokeMethod(
-            self._main_window,
-            "on_processing_progress",
-            Qt.QueuedConnection,
-            Q_ARG(int, 0),
-            Q_ARG(int, len(en_subs_files))
-        )
+        words_from_subs = get_tokens_from_subs_file(self._en_subs_file, self._native_subs_file)
+        phrasal_verbs = get_phrasal_verbs(words_from_subs)
 
         words = add_words_from({}, words_from_tsv_base)
-        for i, en_subs_file in enumerate(en_subs_files):
-            native_subs_file = native_subs_files[i] if len(native_subs_files) > i else ""
-            words_from_subs = get_tokens_from_subs_file(en_subs_file, native_subs_file)
-            phrasal_verbs = get_phrasal_verbs(words_from_subs)
-
-            words = add_words_from(words, words_from_subs)
-            words = add_words_from(words, phrasal_verbs)
-            QMetaObject.invokeMethod(
-                self._main_window,
-                "on_processing_progress",
-                Qt.QueuedConnection,
-                Q_ARG(int, i + 1),
-                Q_ARG(int, len(en_subs_files))
-            )
+        words = add_words_from(words, words_from_subs)
+        words = add_words_from(words, phrasal_verbs)
 
         words = remove_similar_words(words)
         ignored_words = self._show_words(ignored_words, words)

@@ -1,6 +1,6 @@
 from typing import Set, Dict
 
-from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant
+from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant, Qt
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QLabel, QLineEdit, QStyle
 from qt5_t5darkstyle import darkstyle_css
 
@@ -33,9 +33,6 @@ class MainWindow(QMainWindow):
 
         self._background_nltk_uploading = None
         self._background_subtitle_processing = None
-        self._progress_label = QLabel(self)
-        self._progress_label.move(self._go_button.pos().x() + self._go_button.width() + 25, 145)
-        self._progress_label.setText("0/0")
 
     def __del__(self):
         QThreadPool.globalInstance().waitForDone()
@@ -93,10 +90,6 @@ class MainWindow(QMainWindow):
     def on_finish_nltk_data_updating(self) -> None:
         self._nltk_data_update.setText("Update NLTK")
         self._nltk_data_update.setDisabled(False)
-
-    @pyqtSlot(int, int)
-    def on_processing_progress(self, current: int, total: int) -> None:
-        self._progress_label.setText("%s/%s" % (current, total))
 
     @pyqtSlot(QVariant, QVariant, result=QVariant)
     def on_word_list_show(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
