@@ -6,7 +6,7 @@ from qt5_t5darkstyle import darkstyle_css
 
 from src.lang.token import CountedToken
 from .subtitles_processor import SubtitlesProcessor
-from .update_skip_list_dialog import UpdateSkipListDialog
+from .words_dialog import WordsDialog
 from .nltk_data_updater import NLTKDataUpdater
 
 
@@ -120,8 +120,8 @@ class MainWindow(QMainWindow):
         self._progress_label.setText("%s/%s" % (current, total))
 
     @pyqtSlot(QVariant, QVariant, result=QVariant)
-    def on_skip_list_update(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
-        skip_list_window = UpdateSkipListDialog(self, ignored_words, words)
+    def on_word_list_show(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
+        skip_list_window = WordsDialog(self, ignored_words, words)
         if skip_list_window.exec_():
             skip_list_window.save_current_state()
 

@@ -1,4 +1,4 @@
-from typing import Set, Dict, Any, Iterable
+from typing import Set, Dict, Iterable
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QHeaderView, QAbstractItemView, QDialog,
@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QPushButton, QHeaderView, QAbstractItemView, QDialo
 from src.lang.token import CountedToken
 
 
-class UpdateSkipListDialog(QDialog):
+class WordsDialog(QDialog):
     _CHECK_STATE_TO_STR = {Qt.Checked: "checked", Qt.Unchecked: "unchecked"}
     _ALL = "all"
 

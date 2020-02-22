@@ -31,10 +31,10 @@ class SubtitlesProcessor(QRunnable):
                     ignored_words.add(ignored_word)
         return ignored_words
 
-    def _update_skip_list(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
+    def _show_words(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
         ignored_words = QMetaObject.invokeMethod(
             self._main_window,
-            "on_skip_list_update",
+            "on_word_list_show",
             Qt.BlockingQueuedConnection,
             Q_RETURN_ARG(QVariant),
             Q_ARG(QVariant, QVariant(ignored_words)),
@@ -82,7 +82,7 @@ class SubtitlesProcessor(QRunnable):
             )
 
         words = remove_similar_words(words)
-        ignored_words = self._update_skip_list(ignored_words, words)
+        ignored_words = self._show_words(ignored_words, words)
 
         words = {word: token for word, token in words.items() if word not in ignored_words}
         if self._tsv_base_file:
