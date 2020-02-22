@@ -1,15 +1,16 @@
 from typing import Set, Dict, Iterable
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QPushButton, QHeaderView, QAbstractItemView, QDialog,
-                             QTableWidget, QTableWidgetItem, QComboBox)
+from PyQt5.QtWidgets import (QHeaderView, QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem)
 
 from src.lang.token import CountedToken
+from src.ui.widget import make_button, make_combobox
 
 
 class WordsDialog(QDialog):
     _CHECK_STATE_TO_STR = {Qt.Checked: "checked", Qt.Unchecked: "unchecked"}
     _ALL = "all"
+    _COLUMNS = (("word", 110), ("ref cnt", 45), ("class", 85), ("english example", 500), ("native example", 500))
 
     def __init__(self, parent, ignored_words: Set[str], words: Dict[str, CountedToken]):
         QDialog.__init__(self, parent)
@@ -25,14 +26,10 @@ class WordsDialog(QDialog):
         self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._table.verticalHeader().setVisible(False)
 
-        self._table.setColumnCount(5)
-        self._table.setColumnWidth(0, 110)
-        self._table.setColumnWidth(1, 45)
-        self._table.setColumnWidth(2, 85)
-        self._table.setColumnWidth(3, 500)
-        self._table.setColumnWidth(4, 500)
-
-        self._table.setHorizontalHeaderLabels(["word", "ref cnt", "class", "english example", "native example"])
+        self._table.setColumnCount(len(self._COLUMNS))
+        for row_id, header in enumerate(self._COLUMNS):
+            self._table.setColumnWidth(row_id, header[1])
+            self._table.setHorizontalHeaderItem(row_id, QTableWidgetItem(header[0]))
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
         self._table.setRowCount(len(words))
@@ -67,20 +64,20 @@ class WordsDialog(QDialog):
             native_sentence.setToolTip(word_token.token.context_sentence_native)
             self._table.setItem(row_id, 4, native_sentence)
 
-        self._buttons = (
-            self._make_button("Done", 1040, self.accept),
-            self._make_button("Cancel", 1150, self.reject),
-        )
-
-        self._save_button = self._make_button("Save", 930, lambda: self.save_current_state())
+        self._save_button = make_button(self, "Save", 60, 1050, 510, self.save_current_state)
         self._save_button.setDisabled(True)
+
+        self._buttons = (
+            make_button(self, "Start", 60, 1120, 510, self.accept),
+            make_button(self, "Cancel", 60, 1190, 510, self.reject)
+        )
 
         self._part_of_speech_filter = self._ALL
         self._check_state_filter = self._ALL
 
         self._comboboxes = (
-            self._make_combobox((self._ALL, *self._CHECK_STATE_TO_STR.values()), 10, self._filter_by_checks),
-            self._make_combobox((self._ALL, *sorted(used_parts_of_speech)), 120, self._filter_by_part_of_speech)
+            make_combobox(self, (self._ALL, *self._CHECK_STATE_TO_STR.values()), 10, 510, self._filter_by_checks),
+            make_combobox(self, (self._ALL, *sorted(used_parts_of_speech)), 120, 510, self._filter_by_part_of_speech)
         )
 
         self._table.itemChanged.connect(lambda: self._save_button.setDisabled(False))
@@ -114,19 +111,3 @@ class WordsDialog(QDialog):
                 show_row = False
 
             self._table.showRow(row_id) if show_row else self._table.hideRow(row_id)
-
-    def _make_button(self, text: str, x_pos: int, action: callable) -> QPushButton:
-        button = QPushButton(self)
-        button.setText(text)
-        button.resize(100, 25)
-        button.move(x_pos, 510)
-        button.clicked.connect(action)
-        return button
-
-    def _make_combobox(self, items: Iterable, x_pos: int, action: callable) -> QComboBox:
-        combo_box = QComboBox(self)
-        combo_box.addItems(items)
-        combo_box.resize(100, 25)
-        combo_box.move(x_pos, 510)
-        combo_box.activated[str].connect(action)
-        return combo_box

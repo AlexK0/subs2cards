@@ -55,8 +55,6 @@ class SubtitlesProcessor(QRunnable):
         en_subs_files = glob.glob(self._en_subs_file)
         native_subs_files = glob.glob(self._native_subs_file)
 
-        words_in_tsv_initial = len(words_from_tsv_base)
-
         QMetaObject.invokeMethod(
             self._main_window,
             "on_processing_progress",
@@ -90,10 +88,4 @@ class SubtitlesProcessor(QRunnable):
                 for word in sorted(words):
                     out_fp.write(words[word].token.to_tsv_line())
 
-        QMetaObject.invokeMethod(
-            self._main_window,
-            "on_finish_processing",
-            Qt.QueuedConnection,
-            Q_ARG(int, words_in_tsv_initial),
-            Q_ARG(int, len(words))
-        )
+        QMetaObject.invokeMethod(self._main_window, "on_finish_processing", Qt.QueuedConnection)
