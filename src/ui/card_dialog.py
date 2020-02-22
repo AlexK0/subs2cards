@@ -1,12 +1,10 @@
-from typing import Set, Dict, Iterable
+from typing import Dict
 import webbrowser
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QPushButton, QHeaderView, QMainWindow, QDialog,
-                             QTableWidget, QTableWidgetItem, QComboBox, QLabel)
+from PyQt5.QtWidgets import QMainWindow, QDialog
 
-from src.lang.token import CountedToken, Token
+from src.lang.token import CountedToken
 from src.ui.widget import make_button, make_label
 
 

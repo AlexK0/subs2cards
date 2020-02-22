@@ -10,17 +10,17 @@ from src.ui.widget import make_button, make_combobox
 class WordsDialog(QDialog):
     _CHECK_STATE_TO_STR = {Qt.Checked: "checked", Qt.Unchecked: "unchecked"}
     _ALL = "all"
-    _COLUMNS = (("word", 110), ("ref cnt", 45), ("class", 85), ("english example", 500), ("native example", 500))
+    _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85), ("english example", 500), ("native example", 500))
 
     def __init__(self, parent, ignored_words: Set[str], words: Dict[str, CountedToken]):
         QDialog.__init__(self, parent)
 
         self.ignored_words = ignored_words
-        self.setFixedSize(1260, 545)
+        self.setFixedSize(1270, 545)
         self.setWindowTitle("Choose useful words")
 
         self._table = QTableWidget(self)
-        self._table.resize(1260, 500)
+        self._table.resize(1270, 500)
         self._table.setFocusPolicy(Qt.NoFocus)
         self._table.setSelectionMode(QAbstractItemView.NoSelection)
         self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -64,12 +64,12 @@ class WordsDialog(QDialog):
             native_sentence.setToolTip(word_token.token.context_sentence_native)
             self._table.setItem(row_id, 4, native_sentence)
 
-        self._save_button = make_button(self, "Save", 60, 1050, 510, self.save_current_state)
+        self._save_button = make_button(self, "Save", 60, 1060, 510, self.save_current_state)
         self._save_button.setDisabled(True)
 
         self._buttons = (
-            make_button(self, "Start", 60, 1120, 510, self.accept),
-            make_button(self, "Cancel", 60, 1190, 510, self.reject)
+            make_button(self, "Start", 60, 1130, 510, self.accept),
+            make_button(self, "Cancel", 60, 1200, 510, self.reject)
         )
 
         self._part_of_speech_filter = self._ALL

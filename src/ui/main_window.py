@@ -1,6 +1,6 @@
 from typing import Set, Dict
 
-from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant, Qt
+from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QLabel, QLineEdit, QStyle
 from qt5_t5darkstyle import darkstyle_css
 
@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.setStyleSheet(darkstyle_css())
 
-        self.setFixedSize(440, 185)
+        self.setFixedSize(460, 185)
         self.setWindowTitle("subs2cards")
 
         self.setWindowIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
@@ -29,7 +29,9 @@ class MainWindow(QMainWindow):
 
         go_button_x = self._tsv_base_file.pos().x() + self._tsv_base_file.width() - 60
         self._go_button = make_button(self, "Go!", 60, go_button_x, 150, self.start_subtitles_processing)
-        self._nltk_data_update = make_button(self, "Update NLTK", 100, 10, 150, self.start_nltk_data_updating)
+        exit_button_x = self._go_button.pos().x() + self._go_button.width() + 10
+        self._exit = make_button(self, "Exit", 60, exit_button_x, 150, self.close)
+        self._nltk_data_update = make_button(self, "Update NLTK", 110, 10, 150, self.start_nltk_data_updating)
 
         self._background_nltk_uploading = None
         self._background_subtitle_processing = None
@@ -40,8 +42,8 @@ class MainWindow(QMainWindow):
     def _make_edit_line_with_button(self, label: str, x: int, y: int, required: bool) -> QLineEdit:
         line = QLineEdit(self)
         line.resize(250, 25)
-        line.move(x + 100 + 10, y)
-        make_button(self, label, 100, x, y, lambda: self.show_open_dialog(label, line))
+        line.move(x + 110 + 10, y)
+        make_button(self, label, 110, x, y, lambda: self.show_open_dialog(label, line))
 
         line_label = QLabel(self)
         if required:
@@ -50,7 +52,7 @@ class MainWindow(QMainWindow):
         else:
             line_label.setText("(Optional)")
             line_label.setStyleSheet("color: green")
-        line_label.resize(50, 25)
+        line_label.resize(60, 25)
         line_label.move(line.pos().x() + line.width() + 10, y)
 
         return line

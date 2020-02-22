@@ -1,6 +1,7 @@
 nltk
 numpy
 pysubs2
-pyqt5
-PyQt5-stubs
+pyqt5==5.13.2
+PyQtWebEngine==5.13.2
+PyQt5-stubs==5.13.1.4
 qt5_t5darkstyle
