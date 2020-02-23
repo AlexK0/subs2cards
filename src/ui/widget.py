@@ -13,10 +13,10 @@ def make_button(parent: QWidget, text: str, width: int, x_pos: int, y_pos: int, 
     return button
 
 
-def make_combobox(parent: QWidget, items: Iterable, x_pos: int, y_pos: int, action: callable) -> QComboBox:
+def make_combobox(parent: QWidget, items: Iterable, width: int, x_pos: int, y_pos: int, action: callable) -> QComboBox:
     combo_box = QComboBox(parent)
     combo_box.addItems(items)
-    combo_box.resize(100, 25)
+    combo_box.resize(width, 25)
     combo_box.move(x_pos, y_pos)
     combo_box.activated[str].connect(action)
     return combo_box

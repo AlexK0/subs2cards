@@ -13,7 +13,7 @@ class WordsDialog(QDialog):
     _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85), ("english example", 500), ("native example", 500))
 
     def __init__(self, parent, ignored_words: Set[str], words: Dict[str, CountedToken]):
-        QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
 
         self.ignored_words = ignored_words
         self.setFixedSize(1270, 545)
@@ -67,18 +67,14 @@ class WordsDialog(QDialog):
         self._save_button = make_button(self, "Save", 60, 1060, 510, self.save_current_state)
         self._save_button.setDisabled(True)
 
-        self._buttons = (
-            make_button(self, "Start", 60, 1130, 510, self.accept),
-            make_button(self, "Cancel", 60, 1200, 510, self.reject)
-        )
+        make_button(self, "Start", 60, 1130, 510, self.accept),
+        make_button(self, "Cancel", 60, 1200, 510, self.reject)
 
         self._part_of_speech_filter = self._ALL
         self._check_state_filter = self._ALL
 
-        self._comboboxes = (
-            make_combobox(self, (self._ALL, *self._CHECK_STATE_TO_STR.values()), 10, 510, self._filter_by_checks),
-            make_combobox(self, (self._ALL, *sorted(used_parts_of_speech)), 120, 510, self._filter_by_part_of_speech)
-        )
+        make_combobox(self, (self._ALL, *self._CHECK_STATE_TO_STR.values()), 100, 10, 510, self._filter_by_checks)
+        make_combobox(self, (self._ALL, *sorted(used_parts_of_speech)), 100, 120, 510, self._filter_by_part_of_speech)
 
         self._table.itemChanged.connect(lambda: self._save_button.setDisabled(False))
         self._table.setSortingEnabled(True)

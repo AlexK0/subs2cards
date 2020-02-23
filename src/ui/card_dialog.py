@@ -1,28 +1,18 @@
 from typing import Dict
-import webbrowser
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QDialog
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from src.lang.token import CountedToken
-from src.ui.widget import make_button, make_label
-
-
-class GoogleTranslateDialog(QDialog):
-    def __init__(self, parent: QDialog, word: str):
-        QDialog.__init__(self, parent)
-        self.setFixedSize(1000, 700)
-        self._web = QWebEngineView(self)
-        self._web.load(QUrl("https://translate.google.com/#view=home&op=translate&sl=en&tl=ru&text=%s" % word))
-        self._web.setFixedSize(1000, 650)
-        self._web.show()
+from src.ui.widget import make_button, make_label, make_combobox
+from src.ui.translate_dialog import TranslateDialog
 
 
 class WordCardDialog(QDialog):
     def __init__(self, parent: QMainWindow, words: Dict[str, CountedToken]):
-        QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        self.setWindowTitle("Card")
         self.setFixedSize(400, 155)
 
         self._words_list = sorted(words.values(), key=lambda k: k.ref_counter, reverse=True)
@@ -58,5 +48,5 @@ class WordCardDialog(QDialog):
                 self._next_button.setText("Finish")
 
     def _show_google_translate(self) -> None:
-        google_translate = GoogleTranslateDialog(self, self._word_label.text())
+        google_translate = TranslateDialog(self, self._word_label.text())
         google_translate.exec_()
