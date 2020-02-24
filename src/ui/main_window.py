@@ -9,7 +9,7 @@ from src.ui.subtitles_processor import SubtitlesProcessor
 from src.ui.words_dialog import WordsDialog
 from src.ui.nltk_data_updater import NLTKDataUpdater
 from src.ui.widget import make_button
-from src.ui.card_dialog import WordCardDialog
+from src.ui.word_card_dialog import WordCardDialog
 
 
 class MainWindow(QMainWindow):
