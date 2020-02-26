@@ -5,7 +5,7 @@ from PyQt5.QtCore import QRunnable, QMetaObject, Q_ARG, Qt, Q_RETURN_ARG, QVaria
 
 from src.lang.phrasal_verbs import get_phrasal_verbs
 from src.lang.token import (get_tokens_from_subs_file, get_tokens_from_tsv_base,
-                            add_words_from, remove_similar_words, CountedToken)
+                            add_words_from, remove_similar_words, SharedTranslatedToken)
 
 
 class SubtitlesProcessor(QRunnable):
@@ -30,7 +30,7 @@ class SubtitlesProcessor(QRunnable):
                     ignored_words.add(ignored_word)
         return ignored_words
 
-    def _show_words(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
+    def _show_words(self, ignored_words: Set[str], words: Dict[str, SharedTranslatedToken]) -> Set[str]:
         ignored_words = QMetaObject.invokeMethod(
             self._main_window,
             "on_word_list_show",

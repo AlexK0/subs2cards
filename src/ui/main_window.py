@@ -4,7 +4,7 @@ from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QLabel, QLineEdit, QStyle
 from qt5_t5darkstyle import darkstyle_css
 
-from src.lang.token import CountedToken
+from src.lang.token import SharedTranslatedToken
 from src.ui.subtitles_processor import SubtitlesProcessor
 from src.ui.words_dialog import WordsDialog
 from src.ui.nltk_data_updater import NLTKDataUpdater
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self._nltk_data_update.setDisabled(False)
 
     @pyqtSlot(QVariant, QVariant, result=QVariant)
-    def on_word_list_show(self, ignored_words: Set[str], words: Dict[str, CountedToken]) -> Set[str]:
+    def on_word_list_show(self, ignored_words: Set[str], words: Dict[str, SharedTranslatedToken]) -> Set[str]:
         skip_list_window = WordsDialog(self, ignored_words, words)
         show_cards = False
         if skip_list_window.exec_():

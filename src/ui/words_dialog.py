@@ -3,7 +3,7 @@ from typing import Set, Dict
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHeaderView, QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem)
 
-from src.lang.token import CountedToken
+from src.lang.token import SharedTranslatedToken
 from src.ui.widget import make_button, make_combobox
 
 
@@ -12,7 +12,7 @@ class WordsDialog(QDialog):
     _ALL = "all"
     _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85), ("english example", 500), ("native example", 500))
 
-    def __init__(self, parent, ignored_words: Set[str], words: Dict[str, CountedToken]):
+    def __init__(self, parent, ignored_words: Set[str], words: Dict[str, SharedTranslatedToken]):
         QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
 
         self.ignored_words = ignored_words

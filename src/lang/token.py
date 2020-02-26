@@ -207,13 +207,14 @@ def get_tokens_from_tsv_base(tsv_base_file: str) -> List[Token]:
         return [Token.from_tsv_line(line) for line in f.readlines() if line]
 
 
-class CountedToken:
+class SharedTranslatedToken:
     def __init__(self, token: Token):
         self.token = token
         self.ref_counter = 1
+        self.native_translations = []
 
 
-def add_words_from(dest: Dict[str, CountedToken], tokens: List[Token]) -> Dict[str, CountedToken]:
+def add_words_from(dest: Dict[str, SharedTranslatedToken], tokens: List[Token]) -> Dict[str, SharedTranslatedToken]:
     for token in tokens:
         if not token.is_interesting():
             continue
@@ -223,7 +224,7 @@ def add_words_from(dest: Dict[str, CountedToken], tokens: List[Token]) -> Dict[s
             continue
 
         if fixed_token.word not in dest:
-            dest[fixed_token.word] = CountedToken(fixed_token)
+            dest[fixed_token.word] = SharedTranslatedToken(fixed_token)
         else:
             counted_token = dest[fixed_token.word]
             counted_token.ref_counter += 1
@@ -233,7 +234,7 @@ def add_words_from(dest: Dict[str, CountedToken], tokens: List[Token]) -> Dict[s
     return dest
 
 
-def remove_similar_words(words: Dict[str, CountedToken]) -> Dict[str, CountedToken]:
+def remove_similar_words(words: Dict[str, SharedTranslatedToken]) -> Dict[str, SharedTranslatedToken]:
     for word in list(words):
         word_without_end = words[word].token.try_remove_end()
         if word_without_end and word_without_end in words:
