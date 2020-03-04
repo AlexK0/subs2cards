@@ -87,6 +87,21 @@ class WordCardDialog(QDialog):
 
     def _update_translation(self) -> None:
         self._next_button.setDisabled(not self._current_word.native_translations)
-        translations = ", ".join(self._current_word.native_translations)
+        if not self._current_word.native_translations:
+            self._translation_label.setText("")
+            self._translation_label.setToolTip("")
+            return
+
+        translations = "..."
+        for i in reversed(range(len(self._current_word.native_translations) + 1)):
+            translations = ", ".join(self._current_word.native_translations[0:i])
+            if not translations:
+                translations = "..."
+            elif i != len(self._current_word.native_translations):
+                translations = ", ".join((translations, "..."))
+            width = self._translation_label.fontMetrics().boundingRect(translations).width()
+            if width + 10 < self._translation_label.width():
+                break
+
         self._translation_label.setText(translations)
-        self._translation_label.setToolTip(translations)
+        self._translation_label.setToolTip(", ".join(self._current_word.native_translations))

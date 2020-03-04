@@ -32,8 +32,11 @@ class Token:
 
     @staticmethod
     def preload_nltk_data():
-        Token._WNL.lemmatize("")
-        Token.is_word_in_english_vocab("")
+        try:
+            Token._WNL.lemmatize("")
+            Token.is_word_in_english_vocab("")
+        except:
+            pass
 
     def __init__(self, word: str, tag: str, context_sentence_en: str, context_sentence_native: str):
         self.word = word
