@@ -5,41 +5,39 @@ from PyQt5.QtWidgets import QDialog, QWidget
 
 from src.lang.token import Token
 from src.lang.words_database import WordsDatabase
-from src.lang.subs2tokens import get_tokens_from_subs_file
+from src.lang.document2tokens import get_tokens_from_document_file
 
 from src.ui.words_dialog import show_words_dialog
 from src.ui.widget import make_button, make_edit_line_with_button
 from src.ui.tokens_processor import TokensProcessor
 
 
-class SubtitlesDialog(QDialog):
+class DocumentDialog(QDialog):
     def __init__(self, parent: QWidget, words_database: WordsDatabase):
         QDialog.__init__(self, parent)
 
-        self.setFixedSize(460, 115)
-        self.setWindowTitle("Subtitles")
+        self.setFixedSize(460, 80)
+        self.setWindowTitle("Document")
 
         self._words_database = words_database
-        self._en_subs_line = make_edit_line_with_button(self, 'Eng subtitles', 10, 10, True)
-        self._native_subs_line = make_edit_line_with_button(self, 'Native subtitles', 10, 45, False)
+        self._document_line = make_edit_line_with_button(self, 'Document', 10, 10, True)
 
-        go_button_x = self._native_subs_line.pos().x() + self._native_subs_line.width() - 60
-        self._go_button = make_button(self, "Go!", 60, 25, go_button_x, 80, self.start_subtitles_processing)
+        go_button_x = self._document_line.pos().x() + self._document_line.width() - 60
+        self._go_button = make_button(self, "Go!", 60, 25, go_button_x, 45, self.start_document_processing)
         exit_button_x = self._go_button.pos().x() + self._go_button.width() + 10
-        make_button(self, "Exit", 60, 25, exit_button_x, 80, self.close)
+        make_button(self, "Exit", 60, 25, exit_button_x, 45, self.close)
 
         self._background = None
 
     def __del__(self):
         QThreadPool.globalInstance().waitForDone()
 
-    def start_subtitles_processing(self) -> None:
+    def start_document_processing(self) -> None:
         self._go_button.setText("Wait..")
         self._go_button.setDisabled(True)
 
-        en_subs_file = self._en_subs_line.text().strip()
-        native_subs_file = self._native_subs_line.text().strip()
-        self._background = TokensProcessor(lambda: get_tokens_from_subs_file(en_subs_file, native_subs_file), self)
+        document_file = self._document_line.text().strip()
+        self._background = TokensProcessor(lambda: get_tokens_from_document_file(document_file), self)
         QThreadPool.globalInstance().start(self._background)
 
     @pyqtSlot(QVariant)
@@ -47,3 +45,4 @@ class SubtitlesDialog(QDialog):
         self._words_database = show_words_dialog(self, self._words_database, words)
         self._go_button.setText("Go!")
         self._go_button.setDisabled(False)
+

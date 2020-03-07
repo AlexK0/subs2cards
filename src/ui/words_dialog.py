@@ -7,6 +7,7 @@ from src.lang.token import Token
 from src.lang.words_database import WordsDatabase
 
 from src.ui.widget import make_button, make_combobox
+from src.ui.word_card_dialog import WordCardDialog
 
 
 class WordsDialog(QDialog):
@@ -65,7 +66,8 @@ class WordsDialog(QDialog):
             part_of_speech.setTextAlignment(Qt.AlignCenter)
             self._table.setItem(row_id, 2, part_of_speech)
 
-            translations_text = ", ".join(self.words_database.get_word(word).translations)
+            word_record = self.words_database.get_word(word)
+            translations_text = ", ".join(word_record.translations if word_record else [])
             translations = QTableWidgetItem(translations_text)
             translations.setToolTip(translations_text)
             self._table.setItem(row_id, 3, translations)
@@ -124,3 +126,18 @@ class WordsDialog(QDialog):
                 show_row = False
 
             self._table.showRow(row_id) if show_row else self._table.hideRow(row_id)
+
+
+def show_words_dialog(parent: QDialog, words_database: WordsDatabase, words: Dict[str, Token]) -> WordsDatabase:
+    skip_list_window = WordsDialog(parent, words_database, words)
+    if skip_list_window.exec_():
+        skip_list_window.save_current_state_to_words_database()
+        words_database = skip_list_window.words_database
+        words = {word: token for word, token in words.items() if not words_database.is_known_word(word)}
+        if words:
+            card_dialog = WordCardDialog(parent, words, words_database)
+            card_dialog.exec_()
+            card_dialog.deleteLater()
+
+    skip_list_window.deleteLater()
+    return words_database

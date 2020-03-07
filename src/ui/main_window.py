@@ -5,12 +5,10 @@ from qt5_t5darkstyle import darkstyle_css
 
 from src.lang.words_database import WordsDatabase
 
-from src.ui.subtitles_processor import SubtitlesProcessor
 from src.ui.settings_dialog import SettingsDialog, Settings
-from src.ui.words_dialog import WordsDialog
-from src.ui.widget import make_button, make_edit_line_with_button
-from src.ui.word_card_dialog import WordCardDialog
+from src.ui.widget import make_button
 from src.ui.subtitles_dialog import SubtitlesDialog
+from src.ui.document_dialog import DocumentDialog
 
 
 class MainWindow(QMainWindow):
@@ -32,6 +30,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
 
         make_button(self, "Subtitles", 80, 70, 10, 10, self.show_subtitles_dialog)
+        make_button(self, "Document", 80, 70, 100, 10, self.show_document_dialog)
 
         make_button(self, "Settings", 60, 25, 10, 90, self.show_settings)
         make_button(self, "Exit", 60, 25, 240, 90, self.close)
@@ -54,3 +53,8 @@ class MainWindow(QMainWindow):
         self.load_words_database()
         subtitles_dialog = SubtitlesDialog(self, self._words_database)
         subtitles_dialog.exec_()
+
+    def show_document_dialog(self):
+        self.load_words_database()
+        document_dialog = DocumentDialog(self, self._words_database)
+        document_dialog.exec_()

@@ -1,8 +1,19 @@
 from typing import List
+import re
 
 import pysubs2
 
-from src.lang.token import Token, normalize_text, text_to_raw_tokens
+from src.lang.token import Token, text_to_raw_tokens
+
+
+_NORMALIZATION_REGEX = re.compile(r"\{.+\}|\"")
+_URL_REGEX = re.compile(r"(https?://)|(\w\.ru)|(\w\.com)")
+
+
+def _normalize_text(text: str) -> str:
+    if _URL_REGEX.search(text):
+        return ""
+    return _NORMALIZATION_REGEX.sub("", text.replace("\\N", " "))
 
 
 def _is_overlap(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> bool:
@@ -27,7 +38,7 @@ def get_tokens_from_subs_file(en_subs_file: str, native_subs_file: str) -> List[
     text_tokens = []
     native_i = 0
     for en_i, en_line in enumerate(en_lines):
-        normalized_text = normalize_text(en_line.text)
+        normalized_text = _normalize_text(en_line.text)
         if not normalized_text:
             continue
 
@@ -39,7 +50,7 @@ def get_tokens_from_subs_file(en_subs_file: str, native_subs_file: str) -> List[
             interval = _overlap_interval(native_lines[native_i], en_line)
             overlap_rate = interval / en_line.duration
             if overlap_rate > 0.5:
-                normalized_native_text = normalize_text(native_lines[native_i].text)
+                normalized_native_text = _normalize_text(native_lines[native_i].text)
 
         for word, tag in text_to_raw_tokens(normalized_text):
             text_tokens.append(Token(word, tag, normalized_text, normalized_native_text))

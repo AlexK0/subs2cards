@@ -1,5 +1,4 @@
 import re
-from typing import List, Dict
 
 import nltk
 
@@ -36,7 +35,7 @@ class Token:
         except:
             pass
 
-    def __init__(self, word: str, tag: str, context_sentence_en: str, context_sentence_native: str):
+    def __init__(self, word: str, tag: str, context_sentence_en: str, context_sentence_native: str = ''):
         self.word = word
         self.tag = tag
         self.context_sentence_en = context_sentence_en
@@ -115,14 +114,21 @@ class Token:
             return this_bad_chars > other_bad_chars
 
         this_en_context_words = sum(1 for char in self.context_sentence_en if char.isspace()) + 1
-        this_native_context_words = sum(1 for char in self.context_sentence_native if char.isspace()) + 1
-        this_diff = abs(this_en_context_words - this_native_context_words)
-
         other_en_context_words = sum(1 for char in other.context_sentence_en if char.isspace()) + 1
-        other_native_context_words = sum(1 for char in other.context_sentence_native if char.isspace()) + 1
-        other_diff = abs(other_en_context_words - other_native_context_words)
 
-        return this_diff > other_diff
+        if self.context_sentence_native or other.context_sentence_native:
+            this_native_context_words = sum(1 for char in self.context_sentence_native if char.isspace()) + 1
+            this_diff = abs(this_en_context_words - this_native_context_words)
+
+            other_en_context_words = sum(1 for char in other.context_sentence_en if char.isspace()) + 1
+            other_native_context_words = sum(1 for char in other.context_sentence_native if char.isspace()) + 1
+            other_diff = abs(other_en_context_words - other_native_context_words)
+
+            return this_diff > other_diff
+
+        if this_en_context_words < 4 or other_en_context_words < 4:
+            return this_en_context_words < other_en_context_words
+        return this_en_context_words > other_en_context_words
 
     def get_pretty_part_of_speech(self) -> str:
         part_of_speech = "UNKNOWN"
@@ -146,48 +152,7 @@ class Token:
         return Token(word, tag, context_sentence_en, context_sentence_native)
 
 
-_NORMALIZATION_REGEX = re.compile(r"\{.+\}|\"")
-_URL_REGEX = re.compile(r"(https?://)|(\w\.ru)|(\w\.com)")
-
-
-def normalize_text(text: str) -> str:
-    if _URL_REGEX.search(text):
-        return ""
-    return _NORMALIZATION_REGEX.sub("", text.replace("\\N", " "))
-
-
 def text_to_raw_tokens(text: str):
     tokens_raw = nltk.word_tokenize(text.lower())
     return nltk.pos_tag(tokens_raw, tagset='universal')
 
-
-def add_words_from(dest: Dict[str, Token], tokens: List[Token]) -> Dict[str, Token]:
-    for token in tokens:
-        if not token.is_interesting():
-            continue
-
-        fixed_token = token.lemmatize()
-        if not fixed_token.is_interesting():
-            continue
-
-        if fixed_token.word not in dest:
-            dest[fixed_token.word] = fixed_token
-        else:
-            other_token = dest[fixed_token.word]
-            if other_token.is_context_worse_then(fixed_token):
-                fixed_token.ref_counter += other_token.ref_counter
-                dest[fixed_token.word] = fixed_token
-            else:
-                other_token.ref_counter += fixed_token.ref_counter
-
-    return dest
-
-
-def remove_similar_words(words: Dict[str, Token]) -> Dict[str, Token]:
-    for word in list(words):
-        word_without_end = words[word].try_remove_end()
-        if word_without_end and word_without_end in words:
-            words[word_without_end].ref_counter += words[word].ref_counter
-            del words[word]
-
-    return words
