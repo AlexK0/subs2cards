@@ -1,13 +1,13 @@
 from typing import Iterable
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QPushButton, QComboBox, QLabel)
+from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QLabel, QLineEdit, QFileDialog
 
 
-def make_button(parent: QWidget, text: str, width: int, x_pos: int, y_pos: int, action: callable) -> QPushButton:
+def make_button(parent: QWidget, text: str, width: int, height: int, x_pos: int, y_pos: int, action: callable) -> QPushButton:
     button = QPushButton(parent)
     button.setText(text)
-    button.resize(width, 25)
+    button.resize(width, height)
     button.move(x_pos, y_pos)
     button.clicked.connect(action)
     return button
@@ -32,3 +32,31 @@ def make_label(parent: QWidget,  width: int, high: int, x_pos: int, y_pos: int, 
     label.setTextInteractionFlags(Qt.TextSelectableByMouse)
     label.setWordWrap(True)
     return label
+
+
+def show_open_dialog(parent: QWidget, label: str, line: QLineEdit) -> None:
+    file_name = QFileDialog.getOpenFileName(parent, label)[0]
+    if file_name:
+        line.setText(file_name)
+
+
+def make_edit_line_with_button(parent: QWidget, label: str, x: int, y: int, show_required_label=None) -> QLineEdit:
+    line = QLineEdit(parent)
+    line.resize(250, 25)
+    line.move(x + 110 + 10, y)
+
+    make_button(parent, label, 110, 25, x, y, lambda: show_open_dialog(parent, label, line))
+
+    if show_required_label is not None:
+        line_label = QLabel(parent)
+        if show_required_label:
+            line_label.setText("(Required)")
+            line_label.setStyleSheet("color: red")
+        else:
+            line_label.setText("(Optional)")
+            line_label.setStyleSheet("color: green")
+        line_label.resize(60, 25)
+        line_label.move(line.pos().x() + line.width() + 10, y)
+
+    return line
+

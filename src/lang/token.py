@@ -2,8 +2,6 @@ import re
 from typing import List, Dict
 
 import nltk
-import pysubs2
-import os
 
 
 class Token:
@@ -43,6 +41,7 @@ class Token:
         self.tag = tag
         self.context_sentence_en = context_sentence_en
         self.context_sentence_native = context_sentence_native
+        self.ref_counter = 1
 
     def clone(self, new_word: str, new_tag=None) -> 'Token':
         return Token(new_word, new_tag or self.tag, self.context_sentence_en, self.context_sentence_native)
@@ -157,67 +156,12 @@ def normalize_text(text: str) -> str:
     return _NORMALIZATION_REGEX.sub("", text.replace("\\N", " "))
 
 
-def is_overlap(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> bool:
-    return event1.start <= event2.end and event1.end >= event2.start
+def text_to_raw_tokens(text: str):
+    tokens_raw = nltk.word_tokenize(text.lower())
+    return nltk.pos_tag(tokens_raw, tagset='universal')
 
 
-def overlap_interval(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> int:
-    return min(event1.end, event2.end) - max(event1.start, event2.start)
-
-
-def is_less(event1: pysubs2.SSAEvent, event2: pysubs2.SSAEvent) -> bool:
-    return not is_overlap(event1, event2) and event1.start < event2.start
-
-
-def get_tokens_from_subs_file(en_subs_file: str, native_subs_file: str) -> List[Token]:
-    en_subs = pysubs2.load(en_subs_file, encoding="utf-8")
-    native_subs = pysubs2.load(native_subs_file, encoding="utf-8") if native_subs_file else []
-
-    en_lines = [line for line in en_subs]
-    native_lines = [line for line in native_subs]
-
-    text_tokens = []
-    native_i = 0
-    for en_i, en_line in enumerate(en_lines):
-        normalized_text = normalize_text(en_line.text)
-        if not normalized_text:
-            continue
-
-        while native_i < len(native_lines) and is_less(native_lines[native_i], en_line):
-            native_i += 1
-
-        normalized_native_text = ""
-        if native_i < len(native_lines) and is_overlap(native_lines[native_i], en_line):
-            interval = overlap_interval(native_lines[native_i], en_line)
-            overlap_rate = interval / en_line.duration
-            if overlap_rate > 0.5:
-                normalized_native_text = normalize_text(native_lines[native_i].text)
-
-        tokens_raw = nltk.word_tokenize(normalized_text.lower())
-        tagged_raw_tokens = nltk.pos_tag(tokens_raw, tagset='universal')
-
-        for word, tag in tagged_raw_tokens:
-            text_tokens.append(Token(word, tag, normalized_text, normalized_native_text))
-
-    return text_tokens
-
-
-def get_tokens_from_tsv_base(tsv_base_file: str) -> List[Token]:
-    if not tsv_base_file or not os.path.exists(tsv_base_file):
-        return []
-
-    with open(tsv_base_file, "r", encoding="utf-8") as f:
-        return [Token.from_tsv_line(line) for line in f.readlines() if line]
-
-
-class SharedTranslatedToken:
-    def __init__(self, token: Token):
-        self.token = token
-        self.ref_counter = 1
-        self.native_translations = []
-
-
-def add_words_from(dest: Dict[str, SharedTranslatedToken], tokens: List[Token]) -> Dict[str, SharedTranslatedToken]:
+def add_words_from(dest: Dict[str, Token], tokens: List[Token]) -> Dict[str, Token]:
     for token in tokens:
         if not token.is_interesting():
             continue
@@ -227,21 +171,23 @@ def add_words_from(dest: Dict[str, SharedTranslatedToken], tokens: List[Token]) 
             continue
 
         if fixed_token.word not in dest:
-            dest[fixed_token.word] = SharedTranslatedToken(fixed_token)
+            dest[fixed_token.word] = fixed_token
         else:
-            counted_token = dest[fixed_token.word]
-            counted_token.ref_counter += 1
-            if counted_token.token.is_context_worse_then(fixed_token):
-                counted_token.token = fixed_token
+            other_token = dest[fixed_token.word]
+            if other_token.is_context_worse_then(fixed_token):
+                fixed_token.ref_counter += other_token.ref_counter
+                dest[fixed_token.word] = fixed_token
+            else:
+                other_token.ref_counter += fixed_token.ref_counter
 
     return dest
 
 
-def remove_similar_words(words: Dict[str, SharedTranslatedToken]) -> Dict[str, SharedTranslatedToken]:
+def remove_similar_words(words: Dict[str, Token]) -> Dict[str, Token]:
     for word in list(words):
-        word_without_end = words[word].token.try_remove_end()
+        word_without_end = words[word].try_remove_end()
         if word_without_end and word_without_end in words:
-            words[word_without_end].ref_counter += 1
+            words[word_without_end].ref_counter += words[word].ref_counter
             del words[word]
 
     return words

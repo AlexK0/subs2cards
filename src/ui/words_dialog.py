@@ -1,33 +1,42 @@
-from typing import Set, Dict
+from typing import Dict
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QHeaderView, QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem)
 
-from src.lang.token import SharedTranslatedToken
+from src.lang.token import Token
+from src.lang.words_database import WordsDatabase
+
 from src.ui.widget import make_button, make_combobox
 
 
 class WordsDialog(QDialog):
     _CHECK_STATE_TO_STR = {Qt.Checked: "checked", Qt.Unchecked: "unchecked"}
     _ALL = "all"
-    _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85), ("english example", 500), ("native example", 500))
+    _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85),
+                ("translations", 200), ("english example", 500), ("native example", 500))
 
-    def __init__(self, parent, ignored_words: Set[str], words: Dict[str, SharedTranslatedToken]):
+    def __init__(self, parent: QDialog, words_database: WordsDatabase, words: Dict[str, Token]):
         QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
 
-        self.ignored_words = ignored_words
-        self.setFixedSize(1270, 545)
+        if any(token.context_sentence_native for token in words.values()):
+            self._columns = self._COLUMNS
+        else:
+            self._columns = self._COLUMNS[:-1]
+
+        total_width = sum(column_width for column_name, column_width in self._columns) + 20
+        self.words_database = words_database
+        self.setFixedSize(total_width, 545)
         self.setWindowTitle("Choose useful words")
 
         self._table = QTableWidget(self)
-        self._table.resize(1270, 500)
+        self._table.resize(total_width, 500)
         self._table.setFocusPolicy(Qt.NoFocus)
         self._table.setSelectionMode(QAbstractItemView.NoSelection)
         self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._table.verticalHeader().setVisible(False)
 
-        self._table.setColumnCount(len(self._COLUMNS))
-        for row_id, header in enumerate(self._COLUMNS):
+        self._table.setColumnCount(len(self._columns))
+        for row_id, header in enumerate(self._columns):
             self._table.setColumnWidth(row_id, header[1])
             self._table.setHorizontalHeaderItem(row_id, QTableWidgetItem(header[0]))
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
@@ -40,7 +49,7 @@ class WordsDialog(QDialog):
 
             word_checkbox = QTableWidgetItem(word)
             word_checkbox.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-            word_checkbox.setCheckState(Qt.Unchecked if word in self.ignored_words else Qt.Checked)
+            word_checkbox.setCheckState(Qt.Unchecked if self.words_database.is_known_word(word) else Qt.Checked)
 
             word_token = words[word]
             self._table.setItem(row_id, 0, word_checkbox)
@@ -50,25 +59,32 @@ class WordsDialog(QDialog):
             ref_counter.setTextAlignment(Qt.AlignCenter)
             self._table.setItem(row_id, 1, ref_counter)
 
-            part_of_speech_str = word_token.token.get_pretty_part_of_speech()
+            part_of_speech_str = word_token.get_pretty_part_of_speech()
             used_parts_of_speech.add(part_of_speech_str)
             part_of_speech = QTableWidgetItem(part_of_speech_str)
             part_of_speech.setTextAlignment(Qt.AlignCenter)
             self._table.setItem(row_id, 2, part_of_speech)
 
-            en_sentence = QTableWidgetItem(word_token.token.context_sentence_en)
-            en_sentence.setToolTip(word_token.token.context_sentence_en)
-            self._table.setItem(row_id, 3, en_sentence)
+            translations_text = ", ".join(self.words_database.get_word(word).translations)
+            translations = QTableWidgetItem(translations_text)
+            translations.setToolTip(translations_text)
+            self._table.setItem(row_id, 3, translations)
 
-            native_sentence = QTableWidgetItem(word_token.token.context_sentence_native)
-            native_sentence.setToolTip(word_token.token.context_sentence_native)
-            self._table.setItem(row_id, 4, native_sentence)
+            en_sentence = QTableWidgetItem(word_token.context_sentence_en)
+            en_sentence.setToolTip(word_token.context_sentence_en)
+            self._table.setItem(row_id, 4, en_sentence)
 
-        self._save_button = make_button(self, "Save", 60, 1060, 510, self.save_current_state)
+            if word_token.context_sentence_native:
+                native_sentence = QTableWidgetItem(word_token.context_sentence_native)
+                native_sentence.setToolTip(word_token.context_sentence_native)
+                self._table.setItem(row_id, 5, native_sentence)
+
+        self._save_button = make_button(self, "Save", 60, 25, total_width - 3 * 70, 510,
+                                        self.save_current_state_to_words_database)
         self._save_button.setDisabled(True)
 
-        make_button(self, "Start", 60, 1130, 510, self.accept),
-        make_button(self, "Cancel", 60, 1200, 510, self.reject)
+        make_button(self, "Start", 60, 25, total_width - 2 * 70, 510, self.accept),
+        make_button(self, "Cancel", 60, 25, total_width - 70, 510, self.reject)
 
         self._part_of_speech_filter = self._ALL
         self._check_state_filter = self._ALL
@@ -80,14 +96,15 @@ class WordsDialog(QDialog):
         self._table.setSortingEnabled(True)
         self._table.show()
 
-    def save_current_state(self) -> None:
+    def save_current_state_to_words_database(self) -> None:
         self._save_button.setDisabled(True)
 
-        self.ignored_words = set()
         for row_id in range(self._table.rowCount()):
             word_checkbox = self._table.item(row_id, 0)
-            if word_checkbox.checkState() == Qt.Unchecked:
-                self.ignored_words.add(word_checkbox.text())
+            known = word_checkbox.checkState() == Qt.Unchecked
+            self.words_database.update_word(word_checkbox.text(), known)
+
+        self.words_database.save_to_disk()
 
     def _filter_by_checks(self, state: str) -> None:
         self._check_state_filter = state
