@@ -48,8 +48,8 @@ class SubtitlesDialog(QDialog):
         self._background = TokensProcessor(lambda: get_tokens_from_subs_file(en_subs_file, native_subs_file), self)
         QThreadPool.globalInstance().start(self._background)
 
-    @pyqtSlot(QVariant)
-    def on_finish_processing(self, words: Dict[str, Token]) -> None:
+    @pyqtSlot(QVariant, str)
+    def on_finish_processing(self, words: Dict[str, Token], exception: str) -> None:
         self._words_database = show_words_dialog(self, self._words_database, words)
         self._go_button.setText("Go!")
         self._go_button.setDisabled(False)

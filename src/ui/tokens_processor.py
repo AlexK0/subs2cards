@@ -11,5 +11,13 @@ class TokensProcessor(QRunnable):
         self._parent = parent
 
     def run(self) -> None:
-        result = Q_ARG(QVariant, QVariant(process_words(self._tokens_gen())))
-        QMetaObject.invokeMethod(self._parent, "on_finish_processing", Qt.QueuedConnection, result)
+        try:
+            exception_msg = ""
+            tokens = self._tokens_gen()
+        except Exception as ex:
+            tokens = []
+            exception_msg = str(ex)
+
+        result = Q_ARG(QVariant, QVariant(process_words(tokens)))
+        exception_msg = Q_ARG(str, exception_msg)
+        QMetaObject.invokeMethod(self._parent, "on_finish_processing", Qt.QueuedConnection, result, exception_msg)
