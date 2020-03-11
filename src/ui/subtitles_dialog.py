@@ -20,8 +20,14 @@ class SubtitlesDialog(QDialog):
         self.setWindowTitle("Subtitles")
 
         self._words_database = words_database
-        self._en_subs_line = make_edit_line_with_button(self, 'Eng subtitles', 10, 10, True)
-        self._native_subs_line = make_edit_line_with_button(self, 'Native subtitles', 10, 45, False)
+
+        extensions = ";;".join((
+            "Subtitles (*.srt *.ass *.ssa *.sub)",
+            "TXT file (*.txt)",
+            "JSON file (*.json)",
+        ))
+        self._en_subs_line = make_edit_line_with_button(self, 'Eng subtitles', extensions, 10, 10, True)
+        self._native_subs_line = make_edit_line_with_button(self, 'Native subtitles', extensions, 10, 45, False)
 
         go_button_x = self._native_subs_line.pos().x() + self._native_subs_line.width() - 60
         self._go_button = make_button(self, "Go!", 60, 25, go_button_x, 80, self.start_subtitles_processing)

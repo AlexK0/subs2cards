@@ -8,6 +8,7 @@ class Token:
     _LONG_WORD_TAGS = ['ADP', 'CONJ', 'DET', 'PRT', 'PRON']
     PHRASAL_VERB_TAG = "PHRASAL_VERB"
     _SAME_LETTER_IN_ROW = re.compile(r"(([a-z])\2\2)")
+    _NORMAL_WORD_PATTERN = re.compile(r"^[a-z\-]+$")
     _WNL = nltk.stem.WordNetLemmatizer()
     _PART_OF_SPEECH_SHORT2LONG = {
         "ADJ": "adjective",
@@ -81,6 +82,9 @@ class Token:
         if self.tag in self._IGNORING_TAGS:
             return False
 
+        if self.tag == self.PHRASAL_VERB_TAG:
+            return True
+
         if self.tag in self._LONG_WORD_TAGS and len(self.word) < 4:
             return False
 
@@ -90,8 +94,8 @@ class Token:
         if self._SAME_LETTER_IN_ROW.search(self.word):
             return False
 
-        if self.tag == self.PHRASAL_VERB_TAG:
-            return True
+        if not self._NORMAL_WORD_PATTERN.search(self.word):
+            return False
 
         return self.word.find("'") == -1 and self.is_word_in_english_vocab(self.word)
 
@@ -102,7 +106,7 @@ class Token:
         return word in Token._ENGLISH_VOCAB
 
     def is_context_worse_then(self, other: 'Token') -> bool:
-        if bool(self.context_sentence_native) != bool(other.context_sentence_native):
+        if not self.context_sentence_native or not other.context_sentence_native:
             return bool(other.context_sentence_native)
 
         def is_bad_char(char: str) -> bool:
@@ -125,6 +129,11 @@ class Token:
             other_diff = abs(other_en_context_words - other_native_context_words)
 
             return this_diff > other_diff
+
+        this_context_ok = self.context_sentence_en[0].isupper() and self.context_sentence_en[-1] == '.'
+        other_context_ok = other.context_sentence_en[0].isupper() and other.context_sentence_en[-1] == '.'
+        if this_context_ok != other_context_ok:
+            return other_context_ok
 
         if this_en_context_words < 4 or other_en_context_words < 4:
             return this_en_context_words < other_en_context_words

@@ -6,3 +6,4 @@ PyQtWebEngine==5.13.2
 PyQt5-stubs==5.13.1.4
 pysubs2
 textract
+youtube_transcript_api

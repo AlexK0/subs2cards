@@ -20,7 +20,18 @@ class DocumentDialog(QDialog):
         self.setWindowTitle("Document")
 
         self._words_database = words_database
-        self._document_line = make_edit_line_with_button(self, 'Document', 10, 10, True)
+
+        extensions = ";;".join((
+            "Document file (*.doc *.docx *.pptx *.rtf *.pdf *.odt)",
+            "E-mail file (*.eml *.msg)",
+            "E-book file (*.epub)",
+            "HTML file (*.html *.htm)",
+            "TXT file (*.txt)",
+            "JSON file (*.json)",
+            "CSV file (*.csv)",
+            "XLS file (*.xls *.xlsx)"
+        ))
+        self._document_line = make_edit_line_with_button(self, 'Document', extensions, 10, 10, True)
 
         go_button_x = self._document_line.pos().x() + self._document_line.width() - 60
         self._go_button = make_button(self, "Go!", 60, 25, go_button_x, 45, self.start_document_processing)

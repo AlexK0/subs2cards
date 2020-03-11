@@ -73,7 +73,9 @@ class WordCardDialog(QDialog):
 
             self._word_label.setText(self._current_word.word)
             self._eng_example.setText(self._current_word.context_sentence_en)
+            self._eng_example.setToolTip(self._current_word.context_sentence_en)
             self._native_example.setText(self._current_word.context_sentence_native)
+            self._native_example.setToolTip(self._current_word.context_sentence_native)
             self._update_translation()
 
             self._word_id += 1

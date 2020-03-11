@@ -40,7 +40,7 @@ class SettingsDialog(QDialog):
             make_button(self, "Cancel", 70, 25, 320, 45, self.reject),
         )
 
-        self._words_database = make_edit_line_with_button(self, 'Set database file', 10, 10)
+        self._words_database = make_edit_line_with_button(self, 'Database file', "JSON file (*.json)", 10, 10)
         self._words_database.textChanged.connect(lambda: self._ok_button.setDisabled(not self._words_database.text()))
         self._words_database.setText(self.settings.words_database)
 
