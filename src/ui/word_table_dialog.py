@@ -1,17 +1,18 @@
 from typing import Dict
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QHeaderView, QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem)
 
 from src.lang.token import Token
 from src.lang.words_database import WordsDatabase
 
-from src.ui.widget import make_button, make_combobox
+from src.ui.widget import make_button, make_combobox, make_label
 from src.ui.word_card_dialog import WordCardDialog
 
 
-class WordsDialog(QDialog):
-    _CHECK_STATE_TO_STR = {Qt.Checked: "checked", Qt.Unchecked: "unchecked"}
+class WordTableDialog(QDialog):
+    _CHECK_STATE_TO_STR = {Qt.Checked: "unknown", Qt.Unchecked: "known"}
     _ALL = "all"
     _COLUMNS = (("word", 110), ("ref cnt", 55), ("class", 85),
                 ("translations", 200), ("english example", 500), ("native example", 500))
@@ -94,9 +95,24 @@ class WordsDialog(QDialog):
         make_combobox(self, (self._ALL, *self._CHECK_STATE_TO_STR.values()), 100, 10, 510, self._filter_by_checks)
         make_combobox(self, (self._ALL, *sorted(used_parts_of_speech)), 100, 120, 510, self._filter_by_part_of_speech)
 
-        self._table.itemChanged.connect(lambda: self._save_button.setDisabled(False))
+        self._known_label = make_label(self, 100, 25, int(total_width / 2) - 50, 511, QFont("Calibri", 13))
+
+        self._table.itemChanged.connect(self._on_table_update)
         self._table.setSortingEnabled(True)
         self._table.show()
+
+        self._on_table_update()
+        self._save_button.setDisabled(True)
+
+    def _on_table_update(self):
+        unknown_count = 0
+        total_count = self._table.rowCount()
+        for row_id in range(total_count):
+            if self._table.item(row_id, 0).checkState() == Qt.Checked:
+                unknown_count += 1
+
+        self._save_button.setDisabled(False)
+        self._known_label.setText("{}/{}".format(unknown_count, total_count))
 
     def save_current_state_to_words_database(self) -> None:
         self._save_button.setDisabled(True)
@@ -128,8 +144,8 @@ class WordsDialog(QDialog):
             self._table.showRow(row_id) if show_row else self._table.hideRow(row_id)
 
 
-def show_words_dialog(parent: QDialog, words_database: WordsDatabase, words: Dict[str, Token]) -> WordsDatabase:
-    skip_list_window = WordsDialog(parent, words_database, words)
+def show_word_table_dialog(parent: QDialog, words_database: WordsDatabase, words: Dict[str, Token]) -> WordsDatabase:
+    skip_list_window = WordTableDialog(parent, words_database, words)
     if skip_list_window.exec_():
         skip_list_window.save_current_state_to_words_database()
         words_database = skip_list_window.words_database

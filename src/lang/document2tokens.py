@@ -82,4 +82,5 @@ def get_tokens_from_html(html: str) -> List[Token]:
         except:
             pass
         raise
+
     return tokens

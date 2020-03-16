@@ -7,7 +7,7 @@ from src.lang.token import Token
 from src.lang.words_database import WordsDatabase
 from src.lang.document2tokens import get_tokens_from_document_file
 
-from src.ui.words_dialog import show_words_dialog
+from src.ui.word_table_dialog import show_word_table_dialog
 from src.ui.widget import make_button, make_edit_line_with_button, show_error
 from src.ui.tokens_processor import TokensProcessor
 
@@ -56,7 +56,7 @@ class DocumentDialog(QDialog):
         if exception is not None:
             show_error(self, "Can't load document text :(   ", exception)
         else:
-            self._words_database = show_words_dialog(self, self._words_database, words)
+            self._words_database = show_word_table_dialog(self, self._words_database, words)
         self._go_button.setText("Go!")
         self._go_button.setDisabled(False)
 

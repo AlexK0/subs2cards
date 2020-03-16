@@ -15,30 +15,34 @@ class WordCardDialog(QDialog):
     def __init__(self, parent: QWidget, words: Dict[str, Token], words_database: WordsDatabase):
         QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle("Card")
-        self.setFixedSize(400, 220)
+        self.setFixedSize(500, 220)
 
         self._words_database = words_database
         self._words_list = sorted(words.values(), key=lambda k: k.ref_counter, reverse=True)
         self._word_id = 0
 
-        self._word_label = make_label(self, 380, 35, 10, 5, QFont("Calibri", 20, QFont.Bold))
+        self._word_label = make_label(self, 480, 35, 10, 5, QFont("Calibri", 20, QFont.Bold))
 
         self._frequency_bar = QProgressBar(self)
         self._frequency_bar.setFixedSize(100, 15)
-        self._frequency_bar.move(150, 45)
+        self._frequency_bar.move(200, 45)
         self._frequency_bar.setFormat("")
         self._frequency_bar.setRange(0, self._words_list[0].ref_counter)
 
-        self._translation_label = make_label(self, 380, 20, 10, 65, QFont("Calibri", 10, QFont.Light))
+        self._translation_label = make_label(self, 480, 20, 10, 65, QFont("Calibri", 10, QFont.Light))
 
-        self._eng_example = make_label(self, 380, 30, 10, 95, QFont("Calibri", 10, QFont.Light))
-        self._native_example = make_label(self, 380, 30, 10, 135, QFont("Calibri", 10, QFont.Light))
-        self._counter = make_label(self, 100, 15, 150, 190)
+        self._eng_example = make_label(self, 480, 30, 10, 95, QFont("Calibri", 10, QFont.Light))
+        self._native_example = make_label(self, 480, 30, 10, 135, QFont("Calibri", 10, QFont.Light))
+        self._counter = make_label(self, 100, 15, 200, 190)
 
-        make_button(self, "Check", 50, 25, 10, 185, self._open_translate_dialog)
-        make_button(self, "Mark as known", 90, 25, 70, 185, lambda: self._show_next(True))
-        self._next_button = make_button(self, "Next", 50, 25, 280, 185, self._show_next)
-        make_button(self, "Exit", 50, 25, 340, 185, self.reject)
+        make_button(self, "Known", 55, 25, 10, 185, lambda: self._show_next(True)).setToolTip("Mark word as known")
+        make_button(self, "Skip", 55, 25, 75, 185, self._show_next).setToolTip("Skip word")
+        self._next_button = make_button(self, "Take", 55, 25, 140, 185, self._show_next)
+        self._next_button.setToolTip("Take word with translation for learning")
+
+        make_button(self, "Check", 55, 25, 305, 185, self._open_translate_dialog).setToolTip("Check word translation")
+        make_button(self, "Finish", 55, 25, 370, 185, self.accept).setToolTip("Finish here and start learning")
+        make_button(self, "Exit", 55, 25, 435, 185, self.reject).setToolTip("Just exit")
 
         self._current_word = None
         self._show_next()
@@ -46,9 +50,9 @@ class WordCardDialog(QDialog):
     def paintEvent(self, *args, **kwargs):
         painter = QPainter(self)
         painter.setPen(QPen(Qt.lightGray, 2, Qt.SolidLine))
-        painter.drawLine(20, 90, 380, 90)
+        painter.drawLine(20, 90, 480, 90)
         painter.setPen(QPen(Qt.lightGray, 1, Qt.SolidLine))
-        painter.drawLine(20, 130, 380, 130)
+        painter.drawLine(20, 130, 480, 130)
 
     def _show_next(self, add_in_skip_list=False) -> None:
         if add_in_skip_list:
@@ -80,8 +84,6 @@ class WordCardDialog(QDialog):
 
             self._word_id += 1
             self._counter.setText("%s/%s" % (self._word_id, len(self._words_list)))
-            if self._word_id == len(self._words_list):
-                self._next_button.setText("Finish")
 
     def _open_translate_dialog(self) -> None:
         word = self._current_word.word

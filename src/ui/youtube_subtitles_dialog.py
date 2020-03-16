@@ -2,13 +2,13 @@ from typing import Dict
 import re
 
 from PyQt5.QtCore import QThreadPool, pyqtSlot, QVariant
-from PyQt5.QtWidgets import QDialog, QWidget, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QDialog, QWidget, QLineEdit
 
 from src.lang.token import Token
 from src.lang.words_database import WordsDatabase
 from src.lang.subs2tokens import get_tokens_from_youtube
 
-from src.ui.words_dialog import show_words_dialog
+from src.ui.word_table_dialog import show_word_table_dialog
 from src.ui.widget import make_button, show_error
 from src.ui.tokens_processor import TokensProcessor
 
@@ -63,7 +63,7 @@ class YoutubeSubtitlesDialog(QDialog):
         if exception is not None:
             show_error(self, "Can't load youtube subtitles :(   ", exception)
         else:
-            self._words_database = show_words_dialog(self, self._words_database, words)
+            self._words_database = show_word_table_dialog(self, self._words_database, words)
         self._go_button.setText("Go!")
         self._go_button.setDisabled(False)
         self._youtube_video_url_line.setDisabled(False)
