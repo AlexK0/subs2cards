@@ -9,7 +9,7 @@ from src.lang.words_database import WordsDatabase
 from src.lang.subs2tokens import get_tokens_from_youtube
 
 from src.ui.words_dialog import show_words_dialog
-from src.ui.widget import make_button
+from src.ui.widget import make_button, show_error
 from src.ui.tokens_processor import TokensProcessor
 
 
@@ -58,15 +58,10 @@ class YoutubeSubtitlesDialog(QDialog):
         self._background = TokensProcessor(lambda: get_tokens_from_youtube(self._youtube_video_id), self)
         QThreadPool.globalInstance().start(self._background)
 
-    @pyqtSlot(QVariant, str)
-    def on_finish_processing(self, words: Dict[str, Token], exception: str) -> None:
-        if exception:
-            msg = QMessageBox(self)
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Can't load youtube subtitles :(   ")
-            msg.setDetailedText(exception)
-            msg.setWindowTitle("Error")
-            msg.exec_()
+    @pyqtSlot(QVariant, QVariant)
+    def on_finish_processing(self, words: Dict[str, Token], exception: Exception) -> None:
+        if exception is not None:
+            show_error(self, "Can't load youtube subtitles :(   ", exception)
         else:
             self._words_database = show_words_dialog(self, self._words_database, words)
         self._go_button.setText("Go!")

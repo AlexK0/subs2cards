@@ -10,6 +10,7 @@ from src.ui.widget import make_button
 from src.ui.subtitles_dialog import SubtitlesDialog
 from src.ui.document_dialog import DocumentDialog
 from src.ui.youtube_subtitles_dialog import YoutubeSubtitlesDialog
+from src.ui.web_page_dialog import WebPageDialog
 
 
 class MainWindow(QMainWindow):
@@ -39,7 +40,7 @@ class MainWindow(QMainWindow):
         doc_button = make_button(self, "Document", 80, 70, 190, 10, self.show_document_dialog)
         doc_button.setToolTip("Make cards from document")
 
-        web_page_button = make_button(self, "Web page", 80, 70, 280, 10, self.show_document_dialog)
+        web_page_button = make_button(self, "Web page", 80, 70, 280, 10, self.show_web_page_dialog)
         web_page_button.setToolTip("Make cards from web page")
 
         make_button(self, "Settings", 60, 25, 10, 90, self.show_settings)
@@ -71,3 +72,7 @@ class MainWindow(QMainWindow):
     def show_document_dialog(self):
         document_dialog = DocumentDialog(self, self.load_words_database())
         document_dialog.exec_()
+
+    def show_web_page_dialog(self):
+        web_page_dialog = WebPageDialog(self, self.load_words_database())
+        web_page_dialog.exec_()

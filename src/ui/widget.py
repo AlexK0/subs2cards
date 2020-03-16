@@ -1,7 +1,7 @@
 from typing import Iterable
 
-from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QLabel, QLineEdit, QFileDialog
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QLabel, QLineEdit, QFileDialog, QMessageBox
 
 
 def make_button(parent: QWidget, text: str, width: int, height: int, x_pos: int, y_pos: int, action: callable) -> QPushButton:
@@ -61,3 +61,11 @@ def make_edit_line_with_button(parent: QWidget, label: str, extensions: str,
 
     return line
 
+
+def show_error(parent: QWidget, error_msg: str, exception: Exception) -> None:
+    msg = QMessageBox(parent)
+    msg.setIcon(QMessageBox.Warning)
+    msg.setText(error_msg)
+    msg.setDetailedText(str(exception))
+    msg.setWindowTitle("Error")
+    msg.exec_()
