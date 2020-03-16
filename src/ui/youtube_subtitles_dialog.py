@@ -14,7 +14,6 @@ from src.ui.tokens_processor import TokensProcessor
 
 
 class YoutubeSubtitlesDialog(QDialog):
-
     _URL_REGEX = re.compile(r"^https?://www\.youtube\.com/watch\?v=([a-zA-Z0-9_\-]+)$")
 
     def __init__(self, parent: QWidget, words_database: WordsDatabase):

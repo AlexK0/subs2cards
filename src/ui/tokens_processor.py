@@ -18,6 +18,7 @@ class TokensProcessor(QRunnable):
             tokens = []
             exception_msg = str(ex)
 
-        result = Q_ARG(QVariant, QVariant(process_words(tokens)))
+        word_tokens = process_words(tokens)
+        result = Q_ARG(QVariant, QVariant(word_tokens))
         exception_msg = Q_ARG(str, exception_msg)
         QMetaObject.invokeMethod(self._parent, "on_finish_processing", Qt.QueuedConnection, result, exception_msg)

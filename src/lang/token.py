@@ -102,7 +102,9 @@ class Token:
     @staticmethod
     def is_word_in_english_vocab(word: str) -> bool:
         if not Token._ENGLISH_VOCAB:
-            Token._ENGLISH_VOCAB = set(w.lower() for w in nltk.corpus.brown.words())
+            Token._ENGLISH_VOCAB = set(w.lower() for w in nltk.corpus.words.words())
+            Token._ENGLISH_VOCAB.update(w.lower() for w in nltk.corpus.brown.words())
+            Token._ENGLISH_VOCAB.update(w.lower() for w in nltk.corpus.reuters.words())
         return word in Token._ENGLISH_VOCAB
 
     def is_context_worse_then(self, other: 'Token') -> bool:

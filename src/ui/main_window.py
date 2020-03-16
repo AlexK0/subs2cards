@@ -48,9 +48,10 @@ class MainWindow(QMainWindow):
         self._background_subtitle_processing = None
         self._words_database = None
 
-    def load_words_database(self) -> None:
+    def load_words_database(self) -> WordsDatabase:
         if not self._words_database:
             self._words_database = WordsDatabase(self._settings.words_database)
+        return self._words_database
 
     def show_settings(self):
         settings_dialog = SettingsDialog(self, self._settings)
@@ -60,16 +61,13 @@ class MainWindow(QMainWindow):
             self._words_database = None
 
     def show_subtitles_dialog(self):
-        self.load_words_database()
-        subtitles_dialog = SubtitlesDialog(self, self._words_database)
+        subtitles_dialog = SubtitlesDialog(self, self.load_words_database())
         subtitles_dialog.exec_()
 
     def show_youtube_subtitles_dialog(self):
-        self.load_words_database()
-        subtitles_dialog = YoutubeSubtitlesDialog(self, self._words_database)
+        subtitles_dialog = YoutubeSubtitlesDialog(self, self.load_words_database())
         subtitles_dialog.exec_()
 
     def show_document_dialog(self):
-        self.load_words_database()
-        document_dialog = DocumentDialog(self, self._words_database)
+        document_dialog = DocumentDialog(self, self.load_words_database())
         document_dialog.exec_()
