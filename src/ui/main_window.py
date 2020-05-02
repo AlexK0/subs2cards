@@ -1,5 +1,3 @@
-import os
-
 from PyQt5.QtWidgets import QMainWindow, QStyle
 from qt5_t5darkstyle import darkstyle_css
 
@@ -14,16 +12,9 @@ from src.ui.web_page_dialog import WebPageDialog
 
 
 class MainWindow(QMainWindow):
-    _SETTINGS_FILE = "settings.json"
-
-    def __init__(self):
+    def __init__(self, settings: Settings):
         QMainWindow.__init__(self)
-        self._settings = Settings()
-        if os.path.exists(self._SETTINGS_FILE):
-            self._settings.read_from_file(self._SETTINGS_FILE)
-        else:
-            self._settings.save_to_file(self._SETTINGS_FILE)
-
+        self._settings = settings
         self.setStyleSheet(darkstyle_css())
 
         self.setFixedSize(370, 125)
@@ -43,7 +34,7 @@ class MainWindow(QMainWindow):
         web_page_button = make_button(self, "Web page", 80, 70, 280, 10, self.show_web_page_dialog)
         web_page_button.setToolTip("Make cards from web page")
 
-        make_button(self, "Settings", 60, 25, 10, 90, self.show_settings)
+        make_button(self, "Settings", 70, 25, 10, 90, self.show_settings)
         make_button(self, "Exit", 60, 25, 300, 90, self.close)
 
         self._background_subtitle_processing = None
@@ -51,7 +42,7 @@ class MainWindow(QMainWindow):
 
     def load_words_database(self) -> WordsDatabase:
         if not self._words_database:
-            self._words_database = WordsDatabase(self._settings.words_database)
+            self._words_database = WordsDatabase(self._settings.words_database_json_file)
         return self._words_database
 
     def show_settings(self):

@@ -1,9 +1,11 @@
+dnspython
 nltk
 numpy
 qt5_t5darkstyle
 pyqt5==5.13.2
 PyQtWebEngine==5.13.2
 PyQt5-stubs==5.13.1.4
+pymongo
 pysubs2
 textract
 youtube_transcript_api

@@ -12,9 +12,9 @@ class NLTKDataUpdater(QRunnable):
         "tokenizers": ["punkt"]
     }
 
-    def __init__(self, main_window: 'MainWindow'):
+    def __init__(self, parent: 'QDialog'):
         QRunnable.__init__(self)
-        self._main_window = main_window
+        self._parent = parent
 
     def run(self) -> None:
         for modules in self._MODULES.values():
@@ -23,4 +23,4 @@ class NLTKDataUpdater(QRunnable):
                 time.sleep(0.1)
 
         time.sleep(1)
-        QMetaObject.invokeMethod(self._main_window, "on_finish_nltk_data_updating", Qt.QueuedConnection)
+        QMetaObject.invokeMethod(self._parent, "on_finish_nltk_data_updating", Qt.QueuedConnection)
