@@ -17,12 +17,7 @@ if __name__ == '__main__':
     async_init = Thread(target=Token.preload_nltk_data)
     async_init.start()
 
-    settings = Settings()
-    if os.path.exists(_SETTINGS_FILE):
-        settings.read_from_file(_SETTINGS_FILE)
-    else:
-        settings.save_to_file(_SETTINGS_FILE)
-
+    settings = Settings(_SETTINGS_FILE)
     if settings.words_database_mongodb_url:
         async_connector = Thread(
             target=lambda: MongodbGlobalConnection.try_connect(settings.words_database_mongodb_url))

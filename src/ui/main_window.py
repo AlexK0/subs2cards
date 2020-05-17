@@ -49,7 +49,6 @@ class MainWindow(QMainWindow):
         settings_dialog = SettingsDialog(self, self._settings)
         if settings_dialog.exec_():
             self._settings = settings_dialog.settings
-            self._settings.save_to_file(self._SETTINGS_FILE)
             self._words_database = None
 
     def show_subtitles_dialog(self):

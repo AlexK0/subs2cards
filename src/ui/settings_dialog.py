@@ -1,4 +1,5 @@
 import json
+import os
 
 from PyQt5.QtCore import Qt, QThreadPool, pyqtSlot, QVariant
 from PyQt5.QtWidgets import QMainWindow, QDialog, QLineEdit
@@ -9,20 +10,26 @@ from src.ui.widget import make_button, make_edit_line_with_button, show_error
 
 
 class Settings:
-    def __init__(self):
+    def __init__(self, settings_file: str):
+        self._settings_file = settings_file
         self.words_database_json_file = "words_database.json"
         self.words_database_mongodb_url = ""
 
-    def read_from_file(self, file: str) -> 'None':
-        with open(file, 'r') as fp:
+        if os.path.exists(self._settings_file):
+            self.read_from_file()
+        else:
+            self.save_to_file()
+
+    def read_from_file(self) -> 'None':
+        with open(self._settings_file, 'r') as fp:
             settings = json.load(fp)
             if "words_database_json_file" in settings:
                 self.words_database_json_file = settings["words_database_json_file"]
             if "words_database_mongodb_url" in settings:
                 self.words_database_mongodb_url = settings["words_database_mongodb_url"]
 
-    def save_to_file(self, file: str):
-        with open(file, 'w') as fp:
+    def save_to_file(self):
+        with open(self._settings_file, 'w') as fp:
             json.dump(self.__dict__, fp, indent=2, sort_keys=True)
 
 
@@ -103,4 +110,5 @@ class SettingsDialog(QDialog):
     def on_accept(self):
         self.settings.words_database_mongodb_url = self._mongodb_url.text()
         self.settings.words_database_json_file = self._words_database.text()
+        self.settings.save_to_file()
         self.accept()
